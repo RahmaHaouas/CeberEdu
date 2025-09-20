@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberEdu - Educational Apps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px 15px 0 0;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab.active {
+            background: rgba(255,255,255,0.2);
+            border-bottom-color: #4CAF50;
+        }
+
+        .content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 30px;
+            min-height: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .app-section {
+            display: none;
+        }
+
+        .app-section.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        #topology-canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 400px;
+        }
+
+        .chat-window {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.received {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        .chat-input button {
+            margin: 0;
+        }
+
+        .explanation {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .step {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .app-section.active {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 CyberEdu - Educational Applications 🔐</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('encryption')">🔒 Encryption Demo</button>
+            <button class="tab" onclick="showTab('topology')">🌐 Network Topology</button>
+            <button class="tab" onclick="showTab('chat')">💬 LAN Chat</button>
+        </div>
+
+        <div class="content">
+            <!-- Encryption Demo -->
+            <div id="encryption" class="app-section active">
+                <h2>🔒 Encryption Demonstration</h2>
+                <p>Discover how encryption works with Caesar and XOR!</p>
+                
+                <div class="input-group">
+                    <label for="message">Message to encrypt:</label>
+                    <input type="text" id="message" placeholder="Type your secret message...">
+                </div>
+
+                <div class="input-group">
+                    <label for="encryption-type">Encryption type:</label>
+                    <select id="encryption-type">
+                        <option value="caesar">Caesar (shift)</option>
+                        <option value="xor">XOR</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="key">Key (number for Caesar, word for XOR):</label>
+                    <input type="text" id="key" placeholder="3 or password">
+                </div>
+
+                <button onclick="encrypt()">🔒 Encrypt</button>
+                <button onclick="decrypt()">🔓 Decrypt</button>
+                <button onclick="demonstrateVulnerability()">⚠️ Show Vulnerability</button>
+
+                <div id="encryption-result" class="result" style="display: none;"></div>
+
+                <div class="explanation">
+                    <h3>🎯 Why is security essential?</h3>
+                    <p>Simple algorithms like Caesar can be easily broken. In the real world, we use much more complex algorithms like AES-256!</p>
+                </div>
+            </div>
+
+            <!-- Topology Drawer -->
+            <div id="topology" class="app-section">
+                <h2>🌐 Draw Network Topologies</h2>
+                <p>Instantly visualize different network topologies!</p>
+                
+                <div class="input-group">
+                    <label for="topology-type">Choose a topology:</label>
+                    <select id="topology-type">
+                        <option value="star">⭐ Star</option>
+                        <option value="ring">🔄 Ring</option>
+                        <option value="mesh">🕸️ Mesh</option>
+                        <option value="bus">🚌 Bus</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="node-count">Number of nodes:</label>
+                    <input type="number" id="node-count" value="5" min="3" max="10">
+                </div>
+
+                <button onclick="drawTopology()">🎨 Draw Topology</button>
+
+                <canvas id="topology-canvas" width="600" height="400"></canvas>
+
+                <div class="step">
+                    <h3>🎯 Advantages and Disadvantages</h3>
+                    <div id="topology-info"></div>
+                </div>
+            </div>
+
+            <!-- Chat App -->
+            <div id="chat" class="app-section">
+                <h2>💬 Simulated LAN Chat</h2>
+                <p>Discover client/server principle with this simulated chat!</p>
+                
+                <div class="chat-container">
+                    <div class="chat-window">
+                        <div class="chat-header">👤 Client A</div>
+                        <div class="chat-messages" id="chat-a"></div>
+                        <div class="chat-input">
+                            <input type="text" id="input-a" placeholder="Type your message..." 
+                                   onkeypress="if(event.key==='Enter') sendMessage('a')">
+                            <button onclick="sendMessage('a')">Send</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-window">
+                        <div class="chat-header">👤 Client B</div>
+                        <div class="chat-messages" id="chat-b"></div>
+                        <div class="chat-input">
+                            <input type="text" id="input-b" placeholder="Type your message..."
+                                   onkeypress="if(event.key==='Enter') sendMessage('b')">
+                            <button onclick="sendMessage('b')">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🔗 How does it work?</h3>
+                    <p><strong>1. Client → Server:</strong> Message is sent to server<br>
+                    <strong>2. Server → Client:</strong> Server redistributes the message<br>
+                    <strong>3. Protocol:</strong> TCP/IP ensures reliable delivery</p>
+                </div>
+
+                <button onclick="simulateNetworkDelay()">🌐 Simulate Network Delay</button>
+                <button onclick="clearChat()">🗑️ Clear Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables for chat
+        let networkDelay = false;
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.app-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section and tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Encryption functions
+        function caesarCipher(text, shift, decrypt = false) {
+            if (decrypt) shift = -shift;
+            return text.replace(/[a-zA-Z]/g, function(char) {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(((char.charCodeAt(0) - start + shift + 26) % 26) + start);
+            });
+        }
+
+        function xorCipher(text, key) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return result;
+        }
+
+        function encrypt() {
+            const message = document.getElementById('message').value;
+            const type = document.getElementById('encryption-type').value;
+            const key = document.getElementById('key').value;
+            
+            if (!message || !key) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            let encrypted;
+            if (type === 'caesar') {
+                const shift = parseInt(key);
+                encrypted = caesarCipher(message, shift);
+            } else {
+                encrypted = xorCipher(message, key);
+            }
+
+            const resultDiv = document.getElementById('encryption-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h3>🔒 Encrypted Message:</h3>
+                <p><strong>Original:</strong> ${message}</p>
+                <p><strong>Encrypted:</strong> ${encrypted}</p>
+                <p><strong>Algorithm:</strong> ${type.toUpperCase()}</p>
+                <p><strong>Key:</strong> ${key}</p>
+            `;
+        }
+
+        function decrypt() {
+            const message = document.getElementById('message').value;
+            const type = document.getElementById('encryption-type').value;
+            const key = document.getElementById('key').value;
+            
+            if (!message || !key) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            let decrypted;
+            if (type === 'caesar') {
+                const shift = parseInt(key);
+                decrypted = caesarCipher(message, shift, true);
+            } else {
+                decrypted = xorCipher(message, key);
+            }
+
+            const resultDiv = document.getElementById('encryption-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h3>🔓 Decrypted Message:</h3>
+                <p><strong>Encrypted:</strong> ${message}</p>
+                <p><strong>Decrypted:</strong> ${decrypted}</p>
+                <p><strong>Algorithm:</strong> ${type.toUpperCase()}</p>
+                <p><strong>Key:</strong> ${key}</p>
+            `;
+        }
+
+        function demonstrateVulnerability() {
+            const message = "HELLO";
+            const resultDiv = document.getElementById('encryption-result');
+            resultDiv.style.display = 'block';
+            
+            let html = '<h3>⚠️ Vulnerability Demonstration - Caesar Cipher</h3>';
+            html += '<p>Let\'s try to crack "MJQQT" without knowing the key:</p>';
+            
+            for (let i = 1; i <= 25; i++) {
+                const decrypted = caesarCipher("MJQQT", i, true);
+                html += `<p>Key ${i}: ${decrypted} ${decrypted === "HELLO" ? "✅ FOUND!" : ""}</p>`;
+            }
+            
+            html += '<p><strong>🎯 Conclusion:</strong> Caesar can be cracked by brute force in seconds!</p>';
+            resultDiv.innerHTML = html;
+        }
+
+        // Topology drawing functions
+        function drawTopology() {
+            const canvas = document.getElementById('topology-canvas');
+            const ctx = canvas.getContext('2d');
+            const type = document.getElementById('topology-type').value;
+            const nodeCount = parseInt(document.getElementById('node-count').value);
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+            
+            // Draw based on topology type
+            switch(type) {
+                case 'star':
+                    drawStar(ctx, centerX, centerY, radius, nodeCount);
+                    updateTopologyInfo('Star', 'Central hub, easy to manage', 'Single point of failure');
+                    break;
+                case 'ring':
+                    drawRing(ctx, centerX, centerY, radius, nodeCount);
+                    updateTopologyInfo('Ring', 'No collisions, fair access', 'One failure can break network');
+                    break;
+                case 'mesh':
+                    drawMesh(ctx, centerX, centerY, radius, nodeCount);
+                    updateTopologyInfo('Mesh', 'Very robust, redundancy', 'High cost, complex');
+                    break;
+                case 'bus':
+                    drawBus(ctx, centerX, centerY, nodeCount);
+                    updateTopologyInfo('Bus', 'Simple, economical', 'Collisions possible');
+                    break;
+            }
+        }
+
+        function drawStar(ctx, centerX, centerY, radius, nodeCount) {
+            // Draw center node
+            drawNode(ctx, centerX, centerY, 'Server', '#FF6B6B');
+            
+            // Draw outer nodes
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = (i * 2 * Math.PI) / nodeCount;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                // Draw connection line
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = '#4ECDC4';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                drawNode(ctx, x, y, `PC${i+1}`, '#4ECDC4');
+            }
+        }
+
+        function drawRing(ctx, centerX, centerY, radius, nodeCount) {
+            const nodes = [];
+            
+            // Calculate node positions
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = (i * 2 * Math.PI) / nodeCount;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                nodes.push({x, y});
+                drawNode(ctx, x, y, `PC${i+1}`, '#45B7D1');
+            }
+            
+            // Draw connections
+            for (let i = 0; i < nodeCount; i++) {
+                const next = (i + 1) % nodeCount;
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[next].x, nodes[next].y);
+                ctx.strokeStyle = '#45B7D1';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function drawMesh(ctx, centerX, centerY, radius, nodeCount) {
+            const nodes = [];
+            
+            // Calculate node positions
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = (i * 2 * Math.PI) / nodeCount;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                nodes.push({x, y});
+            }
+            
+            // Draw all connections (mesh)
+            for (let i = 0; i < nodeCount; i++) {
+                for (let j = i + 1; j < nodeCount; j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.strokeStyle = '#96CEB4';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+                drawNode(ctx, nodes[i].x, nodes[i].y, `PC${i+1}`, '#96CEB4');
+            }
+        }
+
+        function drawBus(ctx, centerX, centerY, nodeCount) {
+            const startX = centerX - 200;
+            const endX = centerX + 200;
+            const busY = centerY;
+            
+            // Draw main bus line
+            ctx.beginPath();
+            ctx.moveTo(startX, busY);
+            ctx.lineTo(endX, busY);
+            ctx.strokeStyle = '#F7DC6F';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // Draw nodes connected to bus
+            for (let i = 0; i < nodeCount; i++) {
+                const x = startX + (i * (endX - startX) / (nodeCount - 1));
+                const nodeY = busY - 50;
+                
+                // Connection line
+                ctx.beginPath();
+                ctx.moveTo(x, busY);
+                ctx.lineTo(x, nodeY);
+                ctx.strokeStyle = '#F7DC6F';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                drawNode(ctx, x, nodeY, `PC${i+1}`, '#F7DC6F');
+            }
+        }
+
+        function drawNode(ctx, x, y, label, color) {
+            // Draw node circle
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw label
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y - 30);
+        }
+
+        function updateTopologyInfo(name, advantages, disadvantages) {
+            const infoDiv = document.getElementById('topology-info');
+            infoDiv.innerHTML = `
+                <h4>${name}</h4>
+                <p><strong>✅ Advantages:</strong> ${advantages}</p>
+                <p><strong>❌ Disadvantages:</strong> ${disadvantages}</p>
+            `;
+        }
+
+        // Chat functions
+        function sendMessage(from) {
+            const inputId = `input-${from}`;
+            const message = document.getElementById(inputId).value.trim();
+            
+            if (!message) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const to = from === 'a' ? 'b' : 'a';
+            
+            // Add message to sender's chat
+            addMessageToChat(from, message, 'sent', timestamp);
+            
+            // Clear input
+            document.getElementById(inputId).value = '';
+            
+            // Simulate network delay
+            const delay = networkDelay ? 1000 + Math.random() * 2000 : 100;
+            
+            setTimeout(() => {
+                // Add message to receiver's chat
+                addMessageToChat(to, message, 'received', timestamp);
+                
+                // Auto-reply simulation
+                if (Math.random() > 0.7) {
+                    setTimeout(() => {
+                        const replies = [
+                            "Well received! 👍",
+                            "Thanks for the info",
+                            "OK, understood",
+                            "Perfect! 😊",
+                            "Message received 5/5"
+                        ];
+                        const reply = replies[Math.floor(Math.random() * replies.length)];
+                        sendAutoReply(to, reply);
+                    }, 500 + Math.random() * 1500);
+                }
+            }, delay);
+        }
+
+        function addMessageToChat(chatId, message, type, timestamp) {
+            const chatDiv = document.getElementById(`chat-${chatId}`);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div>${message}</div>
+                <small style="opacity: 0.7; font-size: 10px;">${timestamp}</small>
+            `;
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function sendAutoReply(from, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const to = from === 'a' ? 'b' : 'a';
+            
+            addMessageToChat(from, message, 'sent', timestamp);
+            
+            setTimeout(() => {
+                addMessageToChat(to, message, 'received', timestamp);
+            }, 200);
+        }
+
+        function simulateNetworkDelay() {
+            networkDelay = !networkDelay;
+            const btn = event.target;
+            btn.textContent = networkDelay ? '🌐 Delay ON' : '🌐 Simulate Network Delay';
+            btn.style.background = networkDelay ? 
+                'linear-gradient(45deg, #FF6B6B, #ee5a5a)' : 
+                'linear-gradient(45deg, #667eea, #764ba2)';
+        }
+
+        function clearChat() {
+            document.getElementById('chat-a').innerHTML = '';
+            document.getElementById('chat-b').innerHTML = '';
+        }
+
+        // Initialize with first topology
+        window.onload = function() {
+            drawTopology();
+        };
+    </script>
+</body>
+</html>
